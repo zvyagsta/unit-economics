@@ -1,0 +1,994 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Калькулятор юнит-экономики v2.3</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,700;1,400&family=IBM+Plex+Serif:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #f8f8f7;
+      --card: #ffffff;
+      --line: rgba(0, 0, 0, 0.1);
+      --line-strong: rgba(0, 0, 0, 0.18);
+      --text: #1a1a18;
+      --muted: #6b6b67;
+      --accent: #1e6b5e;
+      --accent-soft: #e8f5f2;
+      --danger: #a8352a;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: "IBM Plex Sans", system-ui, sans-serif;
+      font-size: 15px;
+      color: var(--text);
+      background: var(--bg);
+    }
+
+    .page {
+      width: min(1180px, calc(100% - 16px));
+      margin: 0 auto;
+      padding: 16px 0 40px;
+    }
+
+    /* ── Hero ── */
+    .hero {
+      background: var(--card);
+      border: 1px solid var(--line-strong);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 12px;
+    }
+
+    h1, h2, h3 {
+      margin: 0;
+      line-height: 1.1;
+      font-family: "IBM Plex Serif", Georgia, serif;
+      font-weight: 400;
+    }
+
+    h1 {
+      font-size: clamp(28px, 4vw, 48px);
+    }
+
+    h2 {
+      font-size: clamp(20px, 2.5vw, 28px);
+    }
+
+    p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.55;
+    }
+
+    .hero p {
+      margin-top: 10px;
+      max-width: 66ch;
+    }
+
+    .hero-meta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .eyebrow {
+      padding: 5px 10px;
+      border: 1px solid var(--line-strong);
+      border-radius: 4px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .version-chip {
+      padding: 5px 10px;
+      border: 1px solid var(--line-strong);
+      border-radius: 4px;
+      background: transparent;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .quickstart {
+      margin-top: 16px;
+      padding: 14px 16px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--bg);
+    }
+
+    .quickstart strong {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--muted);
+    }
+
+    .quickstart ol {
+      margin: 0;
+      padding-left: 18px;
+      color: var(--muted);
+    }
+
+    .quickstart li + li {
+      margin-top: 5px;
+    }
+
+    a { color: var(--accent); }
+    .help-strong { color: var(--text); font-weight: 600; }
+
+    /* ── Segmented switcher ── */
+    .scenario-tabs {
+      display: flex;
+      border: 1px solid var(--line-strong);
+      border-radius: 10px;
+      overflow: hidden;
+      margin-bottom: 12px;
+      background: var(--card);
+    }
+
+    .scenario-tab {
+      flex: 1;
+      min-width: 0;
+      padding: 13px 12px;
+      border: none;
+      border-right: 1px solid var(--line-strong);
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 500;
+      line-height: 1.3;
+      text-align: center;
+      transition: background 0.12s, color 0.12s;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .scenario-tab:last-child {
+      border-right: none;
+    }
+
+    .scenario-tab:hover:not(.active) {
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    .scenario-tab.active {
+      background: var(--text);
+      color: #fff;
+    }
+
+    .scenario-tab .tab-sub {
+      display: block;
+      font-size: 12px;
+      font-weight: 400;
+      opacity: 0.7;
+      margin-top: 2px;
+    }
+
+    /* ── Scenario shell ── */
+    .scenario-shell {
+      background: var(--card);
+      border: 1px solid var(--line-strong);
+      border-radius: 12px;
+      padding: 20px;
+    }
+
+    .scenario { display: none; }
+    .scenario.active { display: block; }
+
+    .scenario-head {
+      margin-bottom: 18px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .scenario-head p {
+      margin-top: 6px;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 16px;
+      align-items: start;
+    }
+
+    /* ── Inputs panel ── */
+    .panel {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 16px;
+      background: var(--bg);
+    }
+
+    .inputs { display: grid; gap: 10px; }
+
+    .field {
+      display: grid;
+      gap: 7px;
+      padding: 12px 14px;
+      border-radius: 8px;
+      border: 1px solid var(--line);
+      background: var(--card);
+    }
+
+    .field label {
+      font-weight: 700;
+      font-size: 14px;
+    }
+
+    .field-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+      align-items: center;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 9px 12px;
+      border: 1px solid var(--line-strong);
+      border-radius: 6px;
+      background: var(--card);
+      color: var(--text);
+      font: inherit;
+      font-size: 15px;
+    }
+
+    input:focus, select:focus {
+      outline: 2px solid rgba(30, 107, 94, 0.25);
+      border-color: var(--accent);
+    }
+
+    .suffix {
+      min-width: 48px;
+      text-align: right;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .help {
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    /* ── Results bento grid ── */
+    .results {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1px;
+      border: 1px solid var(--line-strong);
+      border-radius: 8px;
+      overflow: hidden;
+      background: var(--line-strong);
+    }
+
+    .card {
+      padding: 16px;
+      background: var(--card);
+    }
+
+    .card-label {
+      font-size: 12px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--muted);
+      min-height: 32px;
+    }
+
+    .card-value {
+      margin-top: 8px;
+      font-size: clamp(22px, 2.8vw, 34px);
+      font-family: "IBM Plex Serif", Georgia, serif;
+      font-weight: 400;
+      line-height: 1.05;
+    }
+
+    .good { color: var(--accent); }
+    .bad { color: var(--danger); }
+
+    /* ── Notes ── */
+    .note-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1px;
+      border: 1px solid var(--line-strong);
+      border-radius: 8px;
+      overflow: hidden;
+      background: var(--line-strong);
+      margin-top: 12px;
+    }
+
+    .note {
+      padding: 14px 16px;
+      background: var(--card);
+    }
+
+    .note strong {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--muted);
+    }
+
+    .note p { color: var(--text); }
+
+    /* ── Formula ── */
+    .formula {
+      margin-top: 12px;
+      padding: 14px 16px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--accent-soft);
+    }
+
+    .formula strong {
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--accent);
+    }
+
+    .formula code {
+      display: block;
+      margin-top: 8px;
+      white-space: pre-wrap;
+      font-size: 13px;
+      color: #1a4a43;
+      line-height: 1.6;
+    }
+
+    /* ── Footer ── */
+    .footer-note {
+      margin-top: 12px;
+      padding: 14px 16px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--card);
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    /* ── Mobile ── */
+    @media (max-width: 640px) {
+      .scenario-tab .tab-sub { display: none; }
+      .field-row { grid-template-columns: 1fr; }
+      .suffix { text-align: left; }
+    }
+
+    /* ── Desktop ── */
+    @media (min-width: 961px) {
+      .page {
+        width: min(1180px, calc(100% - 32px));
+        padding: 28px 0 48px;
+      }
+
+      .hero { padding: 28px; }
+      .scenario-shell { padding: 28px; }
+
+      .layout {
+        grid-template-columns: minmax(300px, 380px) minmax(0, 1fr);
+      }
+
+      .results {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .note-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+
+    <section class="hero">
+      <h1>Калькулятор юнит-экономики</h1>
+      <p>Адаптированная веб-версия калькулятора по мотивам открытого шаблона Ильи Красинского. Термины переведены на обычный язык, чтобы в расчёте можно было разобраться без специальной подготовки.</p>
+      <div class="quickstart">
+        <strong>Как пользоваться</strong>
+        <ol>
+          <li>Выбери сценарий ниже: личная работа, группа или массовый продукт.</li>
+          <li>Заполни поля — почти под каждым полем есть короткое объяснение.</li>
+          <li>Сначала смотри, окупается ли один клиент или один запуск, потом уже общую прибыль.</li>
+        </ol>
+      </div>
+    </section>
+
+    <div class="scenario-tabs" role="tablist">
+      <button class="scenario-tab active" data-scenario="sessions" role="tab" aria-selected="true">
+        Сессии / личная работа
+        <span class="tab-sub">Психолог, консультант, наставник</span>
+      </button>
+      <button class="scenario-tab" data-scenario="group" role="tab" aria-selected="false">
+        Группа / запуск
+        <span class="tab-sub">Поток, мини-группа, серия встреч</span>
+      </button>
+      <button class="scenario-tab" data-scenario="funnel" role="tab" aria-selected="false">
+        Массовый продукт / воронка
+        <span class="tab-sub">Курс, вебинар, широкий B2C</span>
+      </button>
+    </div>
+
+    <section class="scenario-shell">
+
+      <!-- ═══ СЦЕНАРИЙ 1: Сессии ═══ -->
+      <section class="scenario active" id="scenario-sessions">
+        <div class="scenario-head">
+          <h2>Сессии / личная работа</h2>
+          <p>Здесь считаем экономику клиента, который может приходить повторно.</p>
+        </div>
+        <div class="layout">
+          <aside class="panel">
+            <div class="inputs">
+              <div class="field">
+                <label for="s_traffic">Поток людей за период</label>
+                <div class="field-row">
+                  <input id="s_traffic" type="number" min="0" step="1" value="100" />
+                  <span class="suffix">чел.</span>
+                </div>
+                <p class="help">Сколько людей реально дошло до вас за выбранный период: за неделю, месяц или запуск.</p>
+              </div>
+              <div class="field">
+                <label for="s_buyers">Сколько купило</label>
+                <div class="field-row">
+                  <input id="s_buyers" type="number" min="0" step="1" value="10" />
+                  <span class="suffix">чел.</span>
+                </div>
+                <p class="help">Из всего потока выше: сколько человек стало клиентами и оплатило первую сессию.</p>
+              </div>
+              <div class="field">
+                <label for="s_price">Цена одной сессии</label>
+                <div class="field-row">
+                  <input id="s_price" type="number" min="0" step="0.01" value="5000" />
+                  <span class="suffix">руб.</span>
+                </div>
+                <p class="help">Сколько клиент платит за один ваш контакт: сессию, консультацию, созвон.</p>
+              </div>
+              <div class="field">
+                <label for="s_count">Среднее число сессий на клиента</label>
+                <div class="field-row">
+                  <input id="s_count" type="number" min="0" step="0.01" value="4" />
+                  <span class="suffix">раз</span>
+                </div>
+                <p class="help">Среднее число повторных покупок. Если клиент обычно приходит 4 раза, ставим 4.</p>
+              </div>
+              <div class="field">
+                <label for="s_var_mode">Переменные расходы на 1 сессию</label>
+                <div class="field-row">
+                  <select id="s_var_mode">
+                    <option value="amount" selected>Суммой</option>
+                    <option value="percent">Процентом от цены</option>
+                  </select>
+                  <span class="suffix">режим</span>
+                </div>
+              </div>
+              <div class="field">
+                <label for="s_var">Переменные расходы</label>
+                <div class="field-row">
+                  <input id="s_var" type="number" min="0" step="0.01" value="9" />
+                  <span class="suffix" id="s_var_suffix">%</span>
+                </div>
+                <p class="help" id="s_var_help">Все расходы на одну сессию: например налог, эквайринг, комиссия сервиса. Можно указать процентом или суммой.</p>
+              </div>
+              <div class="field">
+                <label for="s_first">Доп. расход на первого клиента</label>
+                <div class="field-row">
+                  <input id="s_first" type="number" min="0" step="0.01" value="0" />
+                  <span class="suffix">руб.</span>
+                </div>
+                <p class="help">Разовый расход, который появляется только при первой продаже: например диагностика или бонус.</p>
+              </div>
+              <div class="field">
+                <label for="s_acq">Расходы на привлечение</label>
+                <div class="field-row">
+                  <input id="s_acq" type="number" min="0" step="0.01" value="15000" />
+                  <span class="suffix">руб.</span>
+                </div>
+                <p class="help"><span class="help-strong">Это база для CAC.</span> Сюда входят рекламные расходы и все, что вы тратите, чтобы получить новых клиентов.</p>
+              </div>
+              <div class="field">
+                <label for="s_fixed">Фиксированные расходы</label>
+                <div class="field-row">
+                  <input id="s_fixed" type="number" min="0" step="0.01" value="10000" />
+                  <span class="suffix">руб.</span>
+                </div>
+                <p class="help">Расходы периода, которые не зависят от числа клиентов: аренда, сервисы, ассистент, подписки.</p>
+              </div>
+            </div>
+          </aside>
+          <main>
+            <div class="results">
+              <div class="card"><div class="card-label">Конверсия в клиента</div><div class="card-value" id="s_conv_out">0</div></div>
+              <div class="card"><div class="card-label">Стоимость привлечения клиента</div><div class="card-value" id="s_cac_out">0</div></div>
+              <div class="card"><div class="card-label">Выручка с клиента за весь цикл (LTV)</div><div class="card-value" id="s_rev_buyer_out">0</div></div>
+              <div class="card"><div class="card-label">Валовая прибыль с клиента</div><div class="card-value" id="s_gp_buyer_out">0</div></div>
+              <div class="card"><div class="card-label">Прибыль с клиента после привлечения</div><div class="card-value" id="s_profit_buyer_out">0</div></div>
+              <div class="card"><div class="card-label">Чистая прибыль за период</div><div class="card-value" id="s_net_out">0</div></div>
+            </div>
+            <div class="note-grid">
+              <div class="note"><strong>Смысл</strong><p id="s_note_main">Сначала смотри, окупается ли один клиент.</p></div>
+              <div class="note"><strong>Рычаг</strong><p id="s_note_secondary">Обычно сильнее всего влияют цена, число повторных сессий и стоимость привлечения.</p></div>
+            </div>
+            <div class="formula">
+              <strong>Формулы</strong>
+              <code>LTV, или выручка с клиента за цикл = цена сессии × число сессий
+Валовая прибыль с клиента = (цена - переменные расходы) × число сессий - доп. расход на первого клиента
+CAC, или стоимость привлечения клиента = расходы на привлечение / число клиентов
+Чистая прибыль = (прибыль с клиента × число клиентов) - фиксированные расходы</code>
+            </div>
+          </main>
+        </div>
+      </section>
+
+      <!-- ═══ СЦЕНАРИЙ 2: Группа ═══ -->
+      <section class="scenario" id="scenario-group">
+        <div class="scenario-head">
+          <h2>Группа / запуск</h2>
+          <p>Здесь главный юнит не один клиент, а один запуск группы.</p>
+        </div>
+        <div class="layout">
+          <aside class="panel">
+            <div class="inputs">
+              <div class="field">
+                <label for="g_price">Цена участия</label>
+                <div class="field-row">
+                  <input id="g_price" type="number" min="0" step="0.01" value="15000" />
+                  <span class="suffix">руб.</span>
+                </div>
+                <p class="help">Сколько платит один участник за вход в группу или поток.</p>
+              </div>
+              <div class="field">
+                <label for="g_min">Минимум участников</label>
+                <div class="field-row">
+                  <input id="g_min" type="number" min="0" step="1" value="7" />
+                  <span class="suffix">чел.</span>
+                </div>
+                <p class="help">Нижний реалистичный сценарий: если набор будет слабым, сколько людей вы все равно можете собрать.</p>
+              </div>
+              <div class="field">
+                <label for="g_max">Максимум участников</label>
+                <div class="field-row">
+                  <input id="g_max" type="number" min="0" step="1" value="12" />
+                  <span class="suffix">чел.</span>
+                </div>
+                <p class="help">Верхний реалистичный сценарий: сколько участников группа может вместить и продать.</p>
+              </div>
+              <div class="field">
+                <label for="g_var_mode">Переменные расходы на участника</label>
+                <div class="field-row">
+                  <select id="g_var_mode">
+                    <option value="percent" selected>Процентом от цены</option>
+                    <option value="amount">Суммой</option>
+                  </select>
+                  <span class="suffix">режим</span>
+                </div>
+              </div>
+              <div class="field">
+                <label for="g_var">Переменные расходы</label>
+                <div class="field-row">
+                  <input id="g_var" type="number" min="0" step="0.01" value="9" />
+                  <span class="suffix" id="g_var_suffix">%</span>
+                </div>
+                <p class="help" id="g_var_help">Все расходы на одного участника: например налог, эквайринг, комиссия сервиса. Можно указать процентом или суммой.</p>
+              </div>
+              <div class="field">
+                <label for="g_acq">Расходы на набор группы</label>
+                <div class="field-row">
+                  <input id="g_acq" type="number" min="0" step="0.01" value="20000" />
+                  <span class="suffix">руб.</span>
+                </div>
+                <p class="help">Все, что уходит на набор именно этого потока: реклама, менеджер, подрядчики, прогрев.</p>
+              </div>
+              <div class="field">
+                <label for="g_fixed">Фиксированные расходы запуска</label>
+                <div class="field-row">
+                  <input id="g_fixed" type="number" min="0" step="0.01" value="30000" />
+                  <span class="suffix">руб.</span>
+                </div>
+                <p class="help">Расходы запуска, которые не зависят от числа участников: куратор, площадка, сервисы, команда.</p>
+              </div>
+            </div>
+          </aside>
+          <main>
+            <div class="results">
+              <div class="card"><div class="card-label">Маржа с одного участника</div><div class="card-value" id="g_margin_out">0</div></div>
+              <div class="card"><div class="card-label">Точка безубыточности</div><div class="card-value" id="g_breakeven_out">0</div></div>
+              <div class="card"><div class="card-label">Прибыль при минимуме</div><div class="card-value" id="g_profit_min_out">0</div></div>
+              <div class="card"><div class="card-label">Прибыль при максимуме</div><div class="card-value" id="g_profit_max_out">0</div></div>
+              <div class="card"><div class="card-label">Выручка при минимуме</div><div class="card-value" id="g_rev_min_out">0</div></div>
+              <div class="card"><div class="card-label">Выручка при максимуме</div><div class="card-value" id="g_rev_max_out">0</div></div>
+            </div>
+            <div class="note-grid">
+              <div class="note"><strong>Смысл</strong><p id="g_note_main">Главный вопрос: окупается ли запуск при минимальном наборе.</p></div>
+              <div class="note"><strong>Рычаг</strong><p id="g_note_secondary">Обычно решают цена участия, расходы на набор и фиксированные расходы потока.</p></div>
+            </div>
+            <div class="formula">
+              <strong>Формулы</strong>
+              <code>Маржа на 1 участника = цена участия - переменные расходы
+Прибыль при N участниках = маржа × N - расходы на набор - фиксированные расходы запуска
+Точка безубыточности = (расходы на набор + фиксированные расходы запуска) / маржа на 1 участника</code>
+            </div>
+          </main>
+        </div>
+      </section>
+
+      <!-- ═══ СЦЕНАРИЙ 3: Воронка ═══ -->
+      <section class="scenario" id="scenario-funnel">
+        <div class="scenario-head">
+          <h2>Массовый продукт / воронка</h2>
+          <p>Логика близка к шаблону Красинского, но без перегруза и только с базовыми метриками.</p>
+        </div>
+        <div class="layout">
+          <aside class="panel">
+            <div class="inputs">
+              <div class="field">
+                <label for="f_traffic">Поток пользователей</label>
+                <div class="field-row">
+                  <input id="f_traffic" type="number" min="0" step="1" value="1000" />
+                  <span class="suffix">чел.</span>
+                </div>
+                <p class="help">Сколько людей дошло до вашей воронки: на сайт, вебинар, в бот, в приложение.</p>
+              </div>
+              <div class="field">
+                <label for="f_mode">Как задается покупка</label>
+                <div class="field-row">
+                  <select id="f_mode">
+                    <option value="percent" selected>Процентом</option>
+                    <option value="count">Количеством купивших</option>
+                  </select>
+                  <span class="suffix">режим</span>
+                </div>
+                <p class="help">Если точного числа купивших ещё нет, удобнее вводить конверсию в процентах.</p>
+              </div>
+              <div class="field">
+                <label for="f_buyers_input" id="f_buyers_label">Конверсия в покупку</label>
+                <div class="field-row">
+                  <input id="f_buyers_input" type="number" min="0" step="0.01" value="5" />
+                  <span class="suffix" id="f_buyers_suffix">%</span>
+                </div>
+                <p class="help">Сколько людей из потока становятся покупателями. Например 5 из 100 = 5%.</p>
+              </div>
+              <div class="field">
+                <label for="f_price">Средний чек одной оплаты</label>
+                <div class="field-row">
+                  <input id="f_price" type="number" min="0" step="0.01" value="12000" />
+                  <span class="suffix">руб.</span>
+                </div>
+                <p class="help">Средняя сумма одной оплаты, если у вас могут быть разные тарифы или допродажи.</p>
+              </div>
+              <div class="field">
+                <label for="f_count">Среднее число оплат на клиента</label>
+                <div class="field-row">
+                  <input id="f_count" type="number" min="0" step="0.01" value="1.8" />
+                  <span class="suffix">раз</span>
+                </div>
+                <p class="help">Сколько оплат в среднем делает один купивший клиент за весь цикл.</p>
+              </div>
+              <div class="field">
+                <label for="f_var_mode">Переменные расходы на 1 оплату</label>
+                <div class="field-row">
+                  <select id="f_var_mode">
+                    <option value="percent" selected>Процентом от чека</option>
+                    <option value="amount">Суммой</option>
+                  </select>
+                  <span class="suffix">режим</span>
+                </div>
+              </div>
+              <div class="field">
+                <label for="f_var">Переменные расходы</label>
+                <div class="field-row">
+                  <input id="f_var" type="number" min="0" step="0.01" value="9" />
+                  <span class="suffix" id="f_var_suffix">%</span>
+                </div>
+                <p class="help" id="f_var_help">Все расходы на одну оплату: например налог, эквайринг, комиссия сервиса, бонус партнеру. Можно указать процентом или суммой.</p>
+              </div>
+              <div class="field">
+                <label for="f_first">Доп. расход на первую продажу</label>
+                <div class="field-row">
+                  <input id="f_first" type="number" min="0" step="0.01" value="0" />
+                  <span class="suffix">руб.</span>
+                </div>
+                <p class="help">Разовый расход на нового покупателя: например пробный урок, демо, вводный созвон.</p>
+              </div>
+              <div class="field">
+                <label for="f_acq">Расходы на привлечение</label>
+                <div class="field-row">
+                  <input id="f_acq" type="number" min="0" step="0.01" value="150000" />
+                  <span class="suffix">руб.</span>
+                </div>
+                <p class="help"><span class="help-strong">Из этой суммы считается CAC.</span> Это все затраты на привлечение трафика и покупателей.</p>
+              </div>
+              <div class="field">
+                <label for="f_fixed">Фиксированные расходы</label>
+                <div class="field-row">
+                  <input id="f_fixed" type="number" min="0" step="0.01" value="200000" />
+                  <span class="suffix">руб.</span>
+                </div>
+                <p class="help">Постоянные расходы периода: команда, сервисы, аренда, поддержка, производство контента.</p>
+              </div>
+            </div>
+          </aside>
+          <main>
+            <div class="results">
+              <div class="card"><div class="card-label">Ожидаемое число купивших</div><div class="card-value" id="f_buyers_out">0</div></div>
+              <div class="card"><div class="card-label">Стоимость привлечения клиента (CAC)</div><div class="card-value" id="f_cac_out">0</div></div>
+              <div class="card"><div class="card-label">Выручка с клиента за цикл (LTV)</div><div class="card-value" id="f_rev_buyer_out">0</div></div>
+              <div class="card"><div class="card-label">Валовая прибыль с клиента</div><div class="card-value" id="f_gp_buyer_out">0</div></div>
+              <div class="card"><div class="card-label">Прибыль с клиента после привлечения</div><div class="card-value" id="f_profit_buyer_out">0</div></div>
+              <div class="card"><div class="card-label">Чистая прибыль за период</div><div class="card-value" id="f_net_out">0</div></div>
+            </div>
+            <div class="note-grid">
+              <div class="note"><strong>Смысл</strong><p id="f_note_main">Здесь мы смотрим, приносит ли плюс каждый купивший клиент.</p></div>
+              <div class="note"><strong>Рычаг</strong><p id="f_note_secondary">Обычно сильнее всего влияют конверсия, CAC, средний чек и число оплат.</p></div>
+            </div>
+            <div class="formula">
+              <strong>Формулы</strong>
+              <code>buyers = трафик × конверсия
+payments = buyers × число оплат
+Маржа на клиента = (средний чек - переменные расходы) × число оплат - доп. расход на первую продажу
+Gross Profit = buyers × маржа на клиента
+CAC, или стоимость привлечения клиента = расходы на привлечение / buyers
+Чистая прибыль = Gross Profit - расходы на привлечение - фиксированные расходы</code>
+            </div>
+          </main>
+        </div>
+      </section>
+
+    </section>
+
+    <div class="footer-note">
+      Если нужна полная версия шаблона — переходите в <a href="https://docs.google.com/spreadsheets/d/1KqNjiucPqr-5gcHAz9qKPm8KaLJCzvuJ7aN92q2Bk7w/edit?usp=sharing" target="_blank" rel="noopener noreferrer">Google Таблицы</a>, копируйте себе и работайте в полном варианте.
+      <br />Методологическая основа: <a href="https://heroes.camp/" target="_blank" rel="noopener noreferrer">Илья Красинский / Product Heroes</a>.
+      <br />Адаптация калькулятора для веба: <a href="https://t.me/a_zvg" target="_blank" rel="noopener noreferrer">Анастасия Звягинцева</a>.
+    </div>
+
+  </div>
+
+  <script>
+    const money = (value) => new Intl.NumberFormat("ru-RU", {
+      style: "currency",
+      currency: "RUB",
+      maximumFractionDigits: 0
+    }).format(value);
+
+    const num = (value, digits = 1) => new Intl.NumberFormat("ru-RU", {
+      maximumFractionDigits: digits
+    }).format(value);
+
+    const pct = (value) => `${num(value, 1)}%`;
+
+    // IDs whose values can reach thousands and need visual formatting
+    const FORMATTED_IDS = [
+      "s_traffic", "s_buyers", "s_price", "s_var", "s_first", "s_acq", "s_fixed",
+      "g_price", "g_var", "g_acq", "g_fixed",
+      "f_traffic", "f_buyers_input", "f_price", "f_var", "f_first", "f_acq", "f_fixed"
+    ];
+
+    function parseFormatted(str) {
+      // Strip non-breaking and regular spaces, swap comma → dot
+      const cleaned = String(str).replace(/[\s\u00A0\u202F]/g, "").replace(",", ".");
+      const n = Number(cleaned);
+      return Number.isFinite(n) ? n : 0;
+    }
+
+    function fmtInput(n) {
+      return new Intl.NumberFormat("ru-RU", { maximumFractionDigits: 0 }).format(n);
+    }
+
+    const read = (id) => {
+      const el = document.getElementById(id);
+      if (!el) return 0;
+      if (FORMATTED_IDS.includes(id)) return parseFormatted(el.value);
+      const n = Number(el.value);
+      return Number.isFinite(n) ? n : 0;
+    };
+
+    const safe = (a, b) => b > 0 ? a / b : 0;
+
+    function setText(id, value, className) {
+      const node = document.getElementById(id);
+      node.textContent = value;
+      node.classList.remove("good", "bad");
+      if (className) node.classList.add(className);
+    }
+
+    function recalcSessions() {
+      const traffic = read("s_traffic");
+      const buyers = read("s_buyers");
+      const price = read("s_price");
+      const count = read("s_count");
+      const varMode = document.getElementById("s_var_mode").value;
+      const varInput = read("s_var");
+      const first = read("s_first");
+      const acq = read("s_acq");
+      const fixed = read("s_fixed");
+
+      const varPerSession = varMode === "percent" ? price * varInput / 100 : varInput;
+      document.getElementById("s_var_suffix").textContent = varMode === "percent" ? "%" : "руб.";
+
+      const conv = safe(buyers * 100, traffic);
+      const revenuePerBuyer = price * count;
+      const grossProfitPerBuyer = (price - varPerSession) * count - first;
+      const cac = safe(acq, buyers);
+      const profitPerBuyer = grossProfitPerBuyer - cac;
+      const net = profitPerBuyer * buyers - fixed;
+
+      setText("s_conv_out", pct(conv), conv > 0 ? "good" : "");
+      setText("s_cac_out", money(cac), "");
+      setText("s_rev_buyer_out", money(revenuePerBuyer), "");
+      setText("s_gp_buyer_out", money(grossProfitPerBuyer), grossProfitPerBuyer >= 0 ? "good" : "bad");
+      setText("s_profit_buyer_out", money(profitPerBuyer), profitPerBuyer >= 0 ? "good" : "bad");
+      setText("s_net_out", money(net), net >= 0 ? "good" : "bad");
+
+      document.getElementById("s_note_main").textContent =
+        profitPerBuyer >= 0
+          ? "Один клиент окупается после привлечения. Это хороший базовый знак."
+          : "Один клиент пока не окупается. Сначала надо чинить цену, повторность или стоимость привлечения.";
+      document.getElementById("s_note_secondary").textContent =
+        count < 2 ? "Сейчас я бы сначала смотрел на число повторных сессий и возвраты клиента." :
+        "Сейчас я бы сначала смотрел на цену, переменные расходы и стоимость привлечения.";
+    }
+
+    function recalcGroup() {
+      const price = read("g_price");
+      const min = read("g_min");
+      const max = Math.max(min, read("g_max"));
+      const varMode = document.getElementById("g_var_mode").value;
+      const varInput = read("g_var");
+      const acq = read("g_acq");
+      const fixed = read("g_fixed");
+
+      const variable = varMode === "percent" ? price * varInput / 100 : varInput;
+      document.getElementById("g_var_suffix").textContent = varMode === "percent" ? "%" : "руб.";
+
+      const margin = price - variable;
+      const totalFixed = acq + fixed;
+      const breakeven = margin > 0 ? totalFixed / margin : 0;
+      const profitMin = margin * min - totalFixed;
+      const profitMax = margin * max - totalFixed;
+      const revMin = price * min;
+      const revMax = price * max;
+
+      setText("g_margin_out", money(margin), margin >= 0 ? "good" : "bad");
+      setText("g_breakeven_out", `${Math.ceil(breakeven)} чел.`, min >= breakeven ? "good" : "bad");
+      setText("g_profit_min_out", money(profitMin), profitMin >= 0 ? "good" : "bad");
+      setText("g_profit_max_out", money(profitMax), profitMax >= 0 ? "good" : "bad");
+      setText("g_rev_min_out", money(revMin), "");
+      setText("g_rev_max_out", money(revMax), "");
+
+      document.getElementById("g_note_main").textContent =
+        profitMin >= 0
+          ? "При минимальном наборе запуск уже окупается."
+          : "При минимальном наборе запуск пока в минусе.";
+      document.getElementById("g_note_secondary").textContent =
+        min >= breakeven
+          ? "Минимум уже проходит точку безубыточности. Дальше вопрос в комфортной прибыли."
+          : "Сейчас надо либо поднимать цену, либо резать расходы на набор и запуск.";
+    }
+
+    function recalcFunnel() {
+      const traffic = read("f_traffic");
+      const mode = document.getElementById("f_mode").value;
+      const buyersInput = read("f_buyers_input");
+      const price = read("f_price");
+      const count = read("f_count");
+      const varMode = document.getElementById("f_var_mode").value;
+      const varInput = read("f_var");
+      const first = read("f_first");
+      const acq = read("f_acq");
+      const fixed = read("f_fixed");
+
+      let buyers = 0;
+      if (mode === "count") {
+        buyers = buyersInput;
+        document.getElementById("f_buyers_label").textContent = "Сколько купило";
+        document.getElementById("f_buyers_suffix").textContent = "чел.";
+      } else {
+        buyers = traffic * buyersInput / 100;
+        document.getElementById("f_buyers_label").textContent = "Конверсия в покупку";
+        document.getElementById("f_buyers_suffix").textContent = "%";
+      }
+
+      const variable = varMode === "percent" ? price * varInput / 100 : varInput;
+      document.getElementById("f_var_suffix").textContent = varMode === "percent" ? "%" : "руб.";
+
+      const revenuePerBuyer = price * count;
+      const grossProfitPerBuyer = (price - variable) * count - first;
+      const cac = safe(acq, buyers);
+      const profitPerBuyer = grossProfitPerBuyer - cac;
+      const net = grossProfitPerBuyer * buyers - acq - fixed;
+
+      setText("f_buyers_out", `${Math.round(buyers)} чел.`, buyers > 0 ? "good" : "");
+      setText("f_cac_out", money(cac), "");
+      setText("f_rev_buyer_out", money(revenuePerBuyer), "");
+      setText("f_gp_buyer_out", money(grossProfitPerBuyer), grossProfitPerBuyer >= 0 ? "good" : "bad");
+      setText("f_profit_buyer_out", money(profitPerBuyer), profitPerBuyer >= 0 ? "good" : "bad");
+      setText("f_net_out", money(net), net >= 0 ? "good" : "bad");
+
+      document.getElementById("f_note_main").textContent =
+        profitPerBuyer >= 0
+          ? "Каждый купивший клиент приносит плюс после привлечения."
+          : "Сейчас купивший клиент не окупается после привлечения.";
+      document.getElementById("f_note_secondary").textContent =
+        buyers < traffic * 0.03
+          ? "Похоже, сначала стоит смотреть на конверсию и оффер."
+          : "Похоже, сначала стоит смотреть на CAC, средний чек и повторные оплаты.";
+    }
+
+    // Segmented tabs
+    document.querySelectorAll(".scenario-tab").forEach((tab) => {
+      tab.addEventListener("click", () => {
+        const target = tab.dataset.scenario;
+        document.querySelectorAll(".scenario-tab").forEach((t) => {
+          t.classList.toggle("active", t === tab);
+          t.setAttribute("aria-selected", t === tab ? "true" : "false");
+        });
+        document.querySelectorAll(".scenario").forEach((s) => s.classList.remove("active"));
+        document.getElementById(`scenario-${target}`).classList.add("active");
+      });
+    });
+
+    // Inputs
+    [
+      "s_traffic", "s_buyers", "s_price", "s_count", "s_var_mode", "s_var", "s_first", "s_acq", "s_fixed",
+      "g_price", "g_min", "g_max", "g_var_mode", "g_var", "g_acq", "g_fixed",
+      "f_traffic", "f_mode", "f_buyers_input", "f_price", "f_count", "f_var_mode", "f_var", "f_first", "f_acq", "f_fixed"
+    ].forEach((id) => {
+      const node = document.getElementById(id);
+      node.addEventListener("input", () => { recalcSessions(); recalcGroup(); recalcFunnel(); });
+      node.addEventListener("change", () => { recalcSessions(); recalcGroup(); recalcFunnel(); });
+    });
+
+    // Convert money inputs to text, format initial values, add focus/blur handlers
+    FORMATTED_IDS.forEach((id) => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      const initial = Number(el.value);
+      el.type = "text";
+      el.setAttribute("inputmode", "numeric");
+      el.value = fmtInput(initial);
+
+      el.addEventListener("focus", () => {
+        const n = parseFormatted(el.value);
+        el.value = n === 0 ? "" : String(n);
+      });
+      el.addEventListener("blur", () => {
+        const n = parseFormatted(el.value);
+        el.value = fmtInput(n);
+        recalcSessions(); recalcGroup(); recalcFunnel();
+      });
+    });
+
+    recalcSessions();
+    recalcGroup();
+    recalcFunnel();
+  </script>
+</body>
+</html>
